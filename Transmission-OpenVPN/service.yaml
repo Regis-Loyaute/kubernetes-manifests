@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: transmission-openvpn
+spec:
+  selector:
+    app: transmission-openvpn
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9091
+      targetPort: 9091
+  type: LoadBalancer

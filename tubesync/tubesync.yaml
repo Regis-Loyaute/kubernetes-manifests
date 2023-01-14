@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tubesync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tubesync
+  template:
+    metadata:
+      labels:
+        app: tubesync
+    spec:
+      containers:
+      - name: tubesync
+        image: ghcr.io/meeb/tubesync:latest
+        ports:
+        - containerPort: 4848
+        env:
+        - name: TZ
+          value: Europe/Paris
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: downloads-volume
+          mountPath: /downloads
+      volumes:
+      - name: config-volume
+        hostPath:
+          path: /mnt/youtube-dl/tubesync-config
+      - name: downloads-volume
+        hostPath:
+          path: /mnt/youtube-dl/tubesync-downloads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tubesync
+spec:
+  selector:
+    app: tubesync
+  ports:
+  - name: http
+    port: 4848
+    targetPort: 4848
+    nodePort: 30001
+  type: NodePort
