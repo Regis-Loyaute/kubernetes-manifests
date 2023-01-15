@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission-openvpn
+spec:
+  selector:
+    matchLabels:
+      app: transmission-openvpn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: transmission-openvpn
+    spec:
+      containers:
+      - name: transmission-openvpn
+        image: haugene/transmission-openvpn
+        ports:
+        - containerPort: 9091
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: OPENVPN_PROVIDER
+          value: "MULLVAD"
+        - name: OPENVPN_CONFIG
+          value: "fr_all"
+        - name: OPENVPN_OPTS
+          value: "--inactive 3600 --ping 10 --ping-exit 60"
+        - name: OPENVPN_USERNAME
+          value: ""
+        - name: OPENVPN_PASSWORD
+          value: "m"
+        - name: LOCAL_NETWORK
+          value: "10.100.0.0/16"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+      volumes:
+      - name: data
+        hostPath:
+          path: /mnt/torrents
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transmission-openvpn
+spec:
+  selector:
+    app: transmission-openvpn
+  ports:
+    - port: 9091
+      targetPort: 9091
+  type: LoadBalancer

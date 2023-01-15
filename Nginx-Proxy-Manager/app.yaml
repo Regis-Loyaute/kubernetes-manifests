@@ -30,7 +30,26 @@ spec:
       volumes:
         - name: data
           hostPath:
-            path: /mnt/data
+            path: /mnt/npm/data
         - name: letsencrypt
           hostPath:
-            path: /mnt/letsencrypt
+            path: /mnt/npm/letsencrypt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: npm
+spec:
+  selector:
+    app: npm
+  ports:
+  - name: npm-http
+    port: 80
+    targetPort: 80
+  - name: npm-admin
+    port: 81
+    targetPort: 81
+  - name: npm-https
+    port: 443
+    targetPort: 443
+  type: LoadBalancer

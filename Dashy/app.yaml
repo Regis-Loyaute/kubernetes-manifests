@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashy
+  template:
+    metadata:
+      labels:
+        app: dashy
+    spec:
+      containers:
+      - name: dashy
+        image: lissy93/dashy
+        ports:
+        - containerPort: 80
+        env:
+        - name: NODE_ENV
+          value: production
+        # - name: UID
+        #   value: "1000"
+        # - name: GID
+        #   value: "1000"
+        volumeMounts:
+        # - name: config
+        #   mountPath: /app/public/conf.yml
+        # - name: item-icons
+        #   mountPath: /app/public/item-icons
+        livenessProbe:
+          exec:
+            command:
+            - node
+            - /app/services/healthcheck
+          initialDelaySeconds: 40
+          periodSeconds: 90
+          timeoutSeconds: 10
+          failureThreshold: 3
+      # volumes:
+      # - name: config
+      #   configMap:
+      #     name: my-config
+      # - name: item-icons
+      #   configMap:
+      #     name: item-icons
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashy
+spec:
+  selector:
+    app: dashy
+  ports:
+    - port: 4000
+      targetPort: 80
+  type: LoadBalancer

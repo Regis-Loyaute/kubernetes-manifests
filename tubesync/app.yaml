@@ -42,11 +42,10 @@ kind: Service
 metadata:
   name: tubesync
 spec:
+  ipFamilyPolicy: PreferDualStack
   selector:
     app: tubesync
   ports:
-  - name: http
-    port: 4848
-    targetPort: 4848
-    nodePort: 30001
-  type: NodePort
+    - port: 4848
+      targetPort: 4848
+  type: LoadBalancer

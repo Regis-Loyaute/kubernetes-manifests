@@ -19,7 +19,7 @@ spec:
         - containerPort: 3001
         volumeMounts:
         - name: uptime-kuma
-          mountPath: /app/data
+          mountPath: /mnt/uptime-kuma/data
       volumes:
       - name: uptime-kuma
         persistentVolumeClaim:
@@ -33,11 +33,9 @@ spec:
   selector:
     app: uptime-kuma
   ports:
-  - name: http
-    port: 3001
-    targetPort: 3001
-    nodePort: 31000
-  type: NodePort
+    - port: 3001
+      targetPort: 3001
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
