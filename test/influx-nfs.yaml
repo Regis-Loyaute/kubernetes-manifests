@@ -1,0 +1,71 @@
+services:
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb2
+    volumes:
+      - /mnt/influxdb/data:/var/lib/influxdb
+      - /var/lib/influxdb/data:/mnt/databases/influxdb/data
+      - /var/lib/influxdb/wal:/mnt/databases/influxdb/wal
+    ports:
+      - 8086:8086
+    restart: unless-stopped
+
+
+
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: influxdb:1.8.3
+        ports:
+        - containerPort: 8086
+        volumeMounts:
+        - name: meta
+          mountPath: /var/lib/influxdb/meta
+        - name: data
+          mountPath: /var/lib/influxdb/data
+        - name: wal
+          mountPath: /var/lib/influxdb/wal
+      volumes:
+        - name: meta
+          nfs:
+            server: truenas
+            path: /mnt/piscine/homelab/databases/influxdb/meta
+        - name: data
+          nfs:
+            server: truenas
+            path: /mnt/piscine/homelab/databases/influxdb/data
+        - name: wal
+          nfs:
+            server: truenas
+            path: /mnt/piscine/homelab/databases/influxdb/wal
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+spec:
+  selector:
+    app: influxdb
+  ports:
+  - name: influxdb-http
+    port: 8086
+    targetPort: 8086
+  type: LoadBalancer

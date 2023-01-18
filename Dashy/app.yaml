@@ -25,10 +25,12 @@ spec:
         # - name: GID
         #   value: "1000"
         volumeMounts:
+        - name: dashy-pvc
+          mountPath: /app/data
         # - name: config
         #   mountPath: /app/public/conf.yml
         # - name: item-icons
-        #   mountPath: /app/public/item-icons
+        #   mountPath: /app/public/item-icons       
         livenessProbe:
           exec:
             command:
@@ -38,6 +40,10 @@ spec:
           periodSeconds: 90
           timeoutSeconds: 10
           failureThreshold: 3
+      volumes:
+      - name: dashy-pvc
+        persistentVolumeClaim:
+            claimName: dashy-pvc
       # volumes:
       # - name: config
       #   configMap:
@@ -45,7 +51,6 @@ spec:
       # - name: item-icons
       #   configMap:
       #     name: item-icons
-
 ---
 apiVersion: v1
 kind: Service

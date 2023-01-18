@@ -33,27 +33,14 @@ spec:
           mountPath: /etc/letsencrypt/
       volumes:
         - name: data
-          hostPath:
-            path: /mnt/npm/data
+          iscsi:
+            targetPortal: truenas.myhomelab.fr:3261
+            iqn: iqn.2005-10.org.freenas.ctl:data-test
+            lun: 1
+            fsType: "ext4"
         - name: letsencrypt
-          hostPath:
-            path: /mnt/npm/letsencrypt
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: npm
-spec:
-  selector:
-    app: npm
-  ports:
-  - name: npm-http
-    port: 80
-    targetPort: 80
-  - name: npm-admin
-    port: 81
-    targetPort: 81
-  - name: npm-https
-    port: 443
-    targetPort: 443
-  type: LoadBalancer
+          iscsi:
+            targetPortal: truenas.myhomelab.fr:3261
+            iqn: iqn.2005-10.org.freenas.ctl:letsencrypt-test
+            lun: 2
+            fsType: "ext4"

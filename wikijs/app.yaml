@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wikijs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wikijs
+  template:
+    metadata:
+      labels:
+        app: wikijs
+    spec:
+      containers:
+      - name: wikijs
+        image: lscr.io/linuxserver/wikijs:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: Europe/London
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /data
+        ports:
+        - containerPort: 3000
+      volumes:
+      - name: config
+        configMap:
+          name: wikijs-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: wikijs-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wikijs
+spec:
+  selector:
+    app: wikijs
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+  type: LoadBalancer

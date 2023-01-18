@@ -30,19 +30,20 @@ spec:
         - name: downloads-volume
           mountPath: /downloads
       volumes:
-      - name: config-volume
-        hostPath:
-          path: /mnt/youtube-dl/tubesync-config
-      - name: downloads-volume
-        hostPath:
-          path: /mnt/youtube-dl/tubesync-downloads
+        - name: config-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/files/media/youtube-dl/tubesync-config
+        - name: downloads-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/files/media/youtube-dl/tubesync-downloads
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: tubesync
+  name: tubesybc
 spec:
-  ipFamilyPolicy: PreferDualStack
   selector:
     app: tubesync
   ports:

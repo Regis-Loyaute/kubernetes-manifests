@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: influxdb:1.8.3
+        ports:
+        - containerPort: 8086
+        volumeMounts:
+        - name: meta
+          mountPath: /var/lib/influxdb/meta
+        - name: data
+          mountPath: /var/lib/influxdb/data
+        - name: wal
+          mountPath: /var/lib/influxdb/wal
+      volumes:
+      - name: meta
+        persistentVolumeClaim:
+          claimName: influx-meta-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: influx-data-pvc
+      - name: wal
+        persistentVolumeClaim:
+          claimName: influx-wal-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+spec:
+  selector:
+    app: influxdb
+  ports:
+  - name: influxdb-http
+    port: 8086
+    targetPort: 8086
+  type: LoadBalancer

@@ -36,14 +36,3 @@ spec:
     - port: 3001
       targetPort: 3001
   type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: uptime-kuma
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
