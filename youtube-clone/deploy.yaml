@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-clone-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youtube-clone-server
+  template:
+    metadata:
+      labels:
+        app: youtube-clone-server
+    spec:
+      containers:
+        - name: server
+          image: reeeeegis/youtube-clone-nodejs-api-backend:latest
+          ports:
+            - containerPort: 3001
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/public/uploads
+          env:
+            - name: env_file
+              value: "./config/.env"
+      volumes:
+        - name: uploads
+          configMap:
+            name: uploads-configmap
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-clone-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youtube-clone-frontend
+  template:
+    metadata:
+      labels:
+        app: youtube-clone-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: reeeeegis/youtube-clone-vue-nodejs-frontend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: env_file
+              value: ".env.development.local"
+          volumeMounts:
+            - name: node_modules
+              mountPath: /app/node_modules
+      volumes:
+        - name: node_modules
+          configMap:
+            name: node_modules-configmap
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtube-clone-server
+  labels:
+    app: youtube-clone-server
+spec:
+  ports:
+    - port: 3001
+      targetPort: 3001
+  selector:
+    app: youtube-clone-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtube-clone-frontend
+  labels:
+    app: youtube-clone-frontend
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: youtube-clone-frontend
+  type: LoadBalancer

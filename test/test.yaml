@@ -34,8 +34,6 @@ spec:
       - name: wal
         persistentVolumeClaim:
           claimName: influx-wal-pvc
-
-
 ---
 apiVersion: v1
 kind: Service

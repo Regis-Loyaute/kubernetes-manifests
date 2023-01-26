@@ -29,7 +29,7 @@ spec:
         - name: OPENVPN_OPTS
           value: "--inactive 3600 --ping 10 --ping-exit 60"
         - name: OPENVPN_USERNAME
-          value: ""
+          value: "4056926335378166"
         - name: OPENVPN_PASSWORD
           value: "m"
         - name: LOCAL_NETWORK

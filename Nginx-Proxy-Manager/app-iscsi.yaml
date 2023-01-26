@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: npm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: npm
+  template:
+    metadata:
+      labels:
+        app: npm
+    spec:
+      containers:
+      - name: npm
+        image: jc21/nginx-proxy-manager:latest
+        ports:
+        - containerPort: 80
+        - containerPort: 81
+        - containerPort: 443
+        env:
+        - name: LOCAL_NETWORK
+          value: "10.100.0.0/16"
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - name: data
+          mountPath: /data/
+        - name: letsencrypt
+          mountPath: /etc/letsencrypt/
+      volumes:
+        - name: data
+          iscsi:
+            targetPortal: truenas.myhomelab.fr:3261
+            iqn: iqn.2005-10.org.freenas.ctl:data-test
+            lun: 1
+            fsType: "ext4"
+        - name: letsencrypt
+          iscsi:
+            targetPortal: truenas.myhomelab.fr:3261
+            iqn: iqn.2005-10.org.freenas.ctl:letsencrypt-test
+            lun: 2
+            fsType: "ext4"
+
+
+
+

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: npm
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: npm
@@ -22,25 +22,23 @@ spec:
         env:
         - name: LOCAL_NETWORK
           value: "10.100.0.0/16"
+        - name: TZ
+          value: Europe/Paris
         - name: PUID
           value: "1000"
         - name: PGID
           value: "1000"
         volumeMounts:
-        - name: data
+        - name: config-volume
           mountPath: /data/
-        - name: letsencrypt
+        - name: downloads-volume
           mountPath: /etc/letsencrypt/
       volumes:
-        - name: data
-          iscsi:
-            targetPortal: truenas.myhomelab.fr:3261
-            iqn: iqn.2005-10.org.freenas.ctl:data-test
-            lun: 1
-            fsType: "ext4"
-        - name: letsencrypt
-          iscsi:
-            targetPortal: truenas.myhomelab.fr:3261
-            iqn: iqn.2005-10.org.freenas.ctl:letsencrypt-test
-            lun: 2
-            fsType: "ext4"
+        - name: config-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/files/media/youtube-dl/npm-config
+        - name: downloads-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/files/media/youtube-dl/npm-downloads

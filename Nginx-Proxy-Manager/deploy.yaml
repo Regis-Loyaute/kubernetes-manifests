@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: npm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: npm
+  template:
+    metadata:
+      labels:
+        app: npm
+    spec:
+      containers:
+      - name: npm
+        image: jc21/nginx-proxy-manager:latest
+        ports:
+        - containerPort: 80
+        - containerPort: 81
+        - containerPort: 443
+        env:
+        - name: LOCAL_NETWORK
+          value: "10.100.0.0/16"
+        - name: TZ
+          value: Europe/Paris
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - name: data-volume
+          mountPath: /data/
+        - name: letsencrypt-volume
+          mountPath: /etc/letsencrypt/
+      volumes:
+        - name: data-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/homelab/k8s/nginx/data
+        - name: letsencrypt-volume
+          nfs:
+            server: truenas
+            path: /mnt/piscine/homelab/k8s/nginx/letsencrypt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: npm
+spec:
+  selector:
+    app: npm
+  ports:
+  - name: npm-http
+    port: 80
+    targetPort: 80
+  - name: npm-admin
+    port: 81
+    targetPort: 81
+  - name: npm-https
+    port: 443
+    targetPort: 443
+  type: LoadBalancer

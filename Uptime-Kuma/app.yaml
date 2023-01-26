@@ -19,7 +19,7 @@ spec:
         - containerPort: 3001
         volumeMounts:
         - name: uptime-kuma
-          mountPath: /mnt/uptime-kuma/data
+          mountPath: /app/data
       volumes:
       - name: uptime-kuma
         persistentVolumeClaim:
