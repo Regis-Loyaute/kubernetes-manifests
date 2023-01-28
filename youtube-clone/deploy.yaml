@@ -1,16 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: youtube-clone-server
+  name: youtube-clone-backend
+  namespace: youtube
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: youtube-clone-server
+      app: youtube-clone-backend
   template:
     metadata:
       labels:
-        app: youtube-clone-server
+        app: youtube-clone-backend
     spec:
       containers:
         - name: server
@@ -19,20 +20,32 @@ spec:
             - containerPort: 3001
           volumeMounts:
             - name: uploads
-              mountPath: /app/public/uploads
-          env:
-            - name: env_file
-              value: "./config/.env"
+              mountPath: /uploads
       volumes:
         - name: uploads
-          configMap:
-            name: uploads-configmap
-
+          persistentVolumeClaim:
+            claimName: uploads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtube-clone-backend
+  namespace: youtube
+spec:
+  selector:
+    app: youtube-clone-backend
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+  type: LoadBalancer
+  loadBalancerIP: 10.100.10.32
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: youtube-clone-frontend
+  namespace: youtube
 spec:
   replicas: 1
   selector:
@@ -48,42 +61,33 @@ spec:
           image: reeeeegis/youtube-clone-vue-nodejs-frontend:latest
           ports:
             - containerPort: 8080
-          env:
-            - name: env_file
-              value: ".env.development.local"
-          volumeMounts:
-            - name: node_modules
-              mountPath: /app/node_modules
-      volumes:
-        - name: node_modules
-          configMap:
-            name: node_modules-configmap
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: youtube-clone-server
-  labels:
-    app: youtube-clone-server
-spec:
-  ports:
-    - port: 3001
-      targetPort: 3001
-  selector:
-    app: youtube-clone-server
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: youtube-clone-frontend
-  labels:
-    app: youtube-clone-frontend
+  namespace: youtube
 spec:
-  ports:
-    - port: 8080
-      targetPort: 8080
   selector:
     app: youtube-clone-frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
   type: LoadBalancer
+  loadBalancerIP: 10.100.10.33
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads
+  namespace: youtube
+  labels:
+    app: youtube-clone-backend
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,12 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: uptime-kuma
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: uptime-kuma
+  serviceName: uptime-kuma
   template:
     metadata:
       labels:
@@ -20,19 +21,11 @@ spec:
         volumeMounts:
         - name: uptime-kuma
           mountPath: /app/data
-      volumes:
-      - name: uptime-kuma
-        persistentVolumeClaim:
-          claimName: uptime-kuma
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: uptime-kuma
-spec:
-  selector:
-    app: uptime-kuma
-  ports:
-    - port: 3001
-      targetPort: 3001
-  type: LoadBalancer
+  volumeClaimTemplates:
+  - metadata:
+      name: uptime-kuma
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
