@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: myhomelab-fr
+  namespace: traefik
+spec:
+  secretName: myhomelab-fr-productions-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "*.myhomelab.fr"
+  dnsNames:
+  - "myhomelab.fr"
+  - "*.myhomelab.fr"

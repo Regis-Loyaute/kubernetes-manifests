@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kwatch
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kwatch
+  namespace: kwatch
+data:
+  config.yaml: |
+    maxRecentLogLines: 8  
+    ignoreFailedGracefulShutdown: true
+    alert:
+      slack:
+        webhook: https://hooks.slack.com/services/

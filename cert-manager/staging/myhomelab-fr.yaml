@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: myhomelab-fr
+  namespace: default
+spec:
+  secretName: myhomelab-fr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "*.myhomelab.fr"
+  dnsNames:
+  - "myhomelab.fr"
+  - "*.myhomelab.fr"

@@ -29,11 +29,86 @@ defaultRules:
     prometheus: true
     prometheusOperator: true
 
+
 alertmanager:
   fullnameOverride: alertmanager
   enabled: true
   ingress:
     enabled: false
+  config:
+    global:
+      # Slack API URL for sending notifications
+      slack_api_url: ''
+      http_config:
+        tls_config:
+          # Skip TLS verification to allow self-signed certificates
+          insecure_skip_verify: true
+    route:
+      # Default receiver for all alerts
+      receiver: 'slack-default'
+      # Group alerts by these labels
+      group_by:
+        - alertname
+        - cluster
+        - service
+        - severity
+        - instance
+      # Wait this long before sending a notification for a new group of alerts
+      group_wait: 30s
+      # Wait this long before sending a notification for an existing group of alerts
+      group_interval: 5m
+      # Wait this long before repeating a notification for a group of alerts
+      repeat_interval: 12h
+      # Define routes for different groups of alerts
+      routes:
+        # Send warnings and critical alerts to the 'slack-warn-critical' receiver
+        - receiver: 'slack-warn-critical'
+          match_re:
+            severity: 'warning|critical'
+          # Continue processing alerts after sending them to this receiver
+          continue: true
+    receivers:
+      # Define a null receiver to discard alerts that don't match any route
+      - name: 'null'
+      # Define the default Slack receiver
+      - name: 'slack-default'
+        slack_configs:
+          # Send notifications for resolved alerts as well as active alerts
+          send_resolved: true
+          # Send notifications to this Slack channel
+          channel: '#k8s-alerts'
+          # Define the message text for the notification
+          text: |-
+            {{ range .Alerts }}
+            *{{ .Labels.alertname }}*
+            {{ if ne .Labels.service "" }}• *Service:* {{ .Labels.service }}
+            {{ end }}{{ if ne .Labels.cluster "" }}• *Cluster:* {{ .Labels.cluster }}
+            {{ end }}{{ if ne .Labels.instance "" }}• *Instance:* {{ .Labels.instance }}
+            {{ end }}• *Severity:* {{ .Labels.severity }}
+            {{ if ne .Labels.namespace "" }}• *Namespace:* {{ .Labels.namespace }}
+            {{ end }}• *Description:*
+            ```
+            {{ .Annotations.description }}
+            ```
+            {{ if ne .Annotations.runbook_url "" }}• *Runbook:* <{{ .Annotations.runbook_url }}|{{ .Annotations.runbook_url }}>
+            {{ end }}
+            {{ end }}
+      # Define a Slack receiver for warnings and critical alerts
+      - name: 'slack-warn-critical'
+        slack_configs:
+          # Send notifications for resolved alerts as well as active alerts
+          send_resolved: true
+          # Send notifications to this Slack channel
+          channel: '#k8s-alerts'
+          # Define the message text for the notification
+          text: |-
+            {{ range .Alerts }}
+            {{ if eq .Labels.severity "critical" }}:rotating_light:{{ else if eq .Labels.severity "warning" }}:warning:{{ end }} *{{ .Labels.alertname }}*
+            {{ if ne .Labels.service "" }}• *Service:* {{ .Labels.service }}
+            {{ end }}{{ if ne .Labels.cluster "" }}• *Cluster:* {{ .Labels.cluster }}
+            {{ end }}{{ if ne .Labels.instance "" }}• *Instance:* {{ .Labels.severity }}
+
+
 
 grafana:
   enabled: true
@@ -167,7 +242,7 @@ prometheusOperator:
 prometheus:
   enabled: true
   prometheusSpec:
-    replicas: 1
+    replicas: 3
     replicaExternalLabelName: "replica"
     ruleSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false

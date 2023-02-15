@@ -8,7 +8,7 @@ spec:
   storageClassName: longhorn
   resources:
     requests:
-      storage: 2Gi
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -67,11 +67,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: dashy
+  name: dashy-service
+  namespace: default
 spec:
   selector:
     app: dashy
   ports:
-    - port: 4000
+    - protocol: TCP
+      port: 4000
       targetPort: 80
-  type: LoadBalancer

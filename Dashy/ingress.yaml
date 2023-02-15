@@ -1,0 +1,18 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dashy-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`dashy.myhomelab.fr`)
+      kind: Rule
+      services:
+        - name: dashy-service
+          port: 4000
+  tls:
+    secretName: myhomelab-fr-productions-tls
